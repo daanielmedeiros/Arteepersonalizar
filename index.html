@@ -15,7 +15,7 @@
                 <h1>Arte em Personalizar</h1>
             </div>
             <ul>
-                <li><a href="#inicio" >Início</a></li>
+                <li><a href="#" id="btnTopo">Início</a></li>
                 <li><a href="#produtos" >Produtos</a></li>
                 <li><a href="#contato" >Contato</a></li>
                 <li id="menuAdmin" style="display: none;"><a href="admin.html">Administração</a></li>
@@ -355,6 +355,12 @@
             
             window.open(urlWhatsApp, '_blank')
         }
+
+        // Botão para rolar até o topo absoluto
+        document.getElementById('btnTopo').addEventListener('click', function(e) {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
 
         // Inicialização
         verificarLogin()
