@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - Arte em Personalizar</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <h2>Criar Conta</h2>
+            <form class="login-form" id="registroForm">
+                <div class="form-group">
+                    <label for="nome">Nome Completo</label>
+                    <input type="text" id="nome" name="nome" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="telefone">Telefone</label>
+                    <input type="tel" id="telefone" name="telefone" required>
+                </div>
+                <div class="form-group">
+                    <label for="senha">Senha</label>
+                    <input type="password" id="senha" name="senha" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label for="confirmarSenha">Confirmar Senha</label>
+                    <input type="password" id="confirmarSenha" name="confirmarSenha" required minlength="6">
+                </div>
+                <button type="submit" class="btn-entrar">Criar Conta</button>
+                <div class="login-links">
+                    <a href="login.html">Já tem uma conta? Faça login</a>
+                </div>
+            </form>
+            <a href="index.html" class="voltar-home">Voltar para a página inicial</a>
+        </div>
+    </div>
+
+    <script>
+        const supabaseUrl = 'https://zbymjdmpcudwknnvzdtk.supabase.co'
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpieW1qZG1wY3Vkd2tubnZ6ZHRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0OTk0MDUsImV4cCI6MjA2MzA3NTQwNX0.94yZvmggSaMBWfbhMbLOnUMK-tLh5cZolh0ZJp3BUto'
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey)
+
+        document.getElementById('registroForm').addEventListener('submit', async (e) => {
+            e.preventDefault()
+            
+            const nome = document.getElementById('nome').value
+            const email = document.getElementById('email').value
+            const telefone = document.getElementById('telefone').value
+            const senha = document.getElementById('senha').value
+            const confirmarSenha = document.getElementById('confirmarSenha').value
+
+            if (senha !== confirmarSenha) {
+                alert('As senhas não coincidem!')
+                return
+            }
+
+            if (senha.length < 6) {
+                alert('A senha deve ter pelo menos 6 caracteres!')
+                return
+            }
+
+            try {
+                console.log('Iniciando processo de registro...')
+                
+                // Criar usuário no Supabase Auth
+                const { data: authData, error: authError } = await supabase.auth.signUp({
+                    email: email,
+                    password: senha,
+                    options: {
+                        data: {
+                            nome: nome,
+                            telefone: telefone
+                        }
+                    }
+                })
+
+                if (authError) {
+                    console.error('Erro na autenticação:', authError)
+                    throw authError
+                }
+
+                console.log('Usuário criado com sucesso no Auth:', authData)
+
+                // Aguardar um momento para garantir que o usuário foi criado
+                await new Promise(resolve => setTimeout(resolve, 1000))
+
+                // Criar registro na tabela de usuários
+                const { data: userData, error: userError } = await supabase
+                    .from('usuarios')
+                    .insert([
+                        {
+                            id: authData.user.id,
+                            nome: nome,
+                            email: email,
+                            telefone: telefone,
+                            nivel_acesso: 1
+                        }
+                    ])
+                    .select()
+
+                if (userError) {
+                    console.error('Erro ao criar usuário na tabela:', userError)
+                    throw userError
+                }
+
+                console.log('Usuário criado com sucesso na tabela:', userData)
+
+                alert('Conta criada com sucesso! Verifique seu email para confirmar o cadastro.')
+                window.location.href = 'login.html'
+
+            } catch (error) {
+                console.error('Erro completo:', error)
+                alert('Erro ao criar conta: ' + (error.message || 'Erro desconhecido'))
+            }
+        })
+    </script>
+</body>
+</html> 

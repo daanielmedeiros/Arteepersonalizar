@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arte em Personalizar - Fátima Medeiros</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <img src="img/logo.jpeg" alt="Logo Arte em Personalizar" class="logo-img">
+                <h1>Arte em Personalizar</h1>
+            </div>
+            <ul>
+                <li><a href="#inicio" class="menu-link">Início</a></li>
+                <li><a href="#sobre" class="menu-link">Sobre</a></li>
+                <li><a href="#produtos" class="menu-link">Produtos</a></li>
+                <li><a href="#contato" class="menu-link">Contato</a></li>
+                <li id="menuAdmin" style="display: none;"><a href="admin.html">Administração</a></li>
+                <li id="menuLogin"><a href="login.html" class="btn-login">Login</a></li>
+                <li id="menuSair" style="display: none;"><a href="#" id="btnSair" class="btn-login">Sair</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="inicio" class="hero">
+            <h2>Bem-vindo à Arte em Personalizar</h2>
+            <p>Transformando ideias em arte personalizada</p>
+        </section>
+
+        <section id="sobre" class="sobre">
+            <h2>Sobre Nós</h2>
+            <p>Olá! Sou Fátima Medeiros, artesã e proprietária da Arte em Personalizar. 
+               Criamos produtos únicos e personalizados para tornar seus momentos especiais ainda mais memoráveis.</p>
+        </section>
+
+        <section id="produtos" class="produtos">
+            <h2>Nossos Produtos</h2>
+            <div class="galeria-produtos" id="galeriaProdutos">
+                <!-- Produtos serão carregados aqui -->
+            </div>
+        </section>
+
+        <section id="contato" class="contato">
+            <h2>Entre em Contato</h2>
+            <div class="info-contato">
+                <p>WhatsApp: (82) 9 8832-7713</p>
+                <p>Email: fal_medeiros@hotmail.com</p>
+                <p>Instagram: @arteempersonalizar_</p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Arte e Personalizados - Todos os direitos reservados</p>
+    </footer>
+
+    <!-- Modal para exibir imagens -->
+    <div id="imageModal" class="modal">
+        <div class="modal-container">
+            <span class="close-modal">&times;</span>
+            <div class="modal-content">
+                <div class="modal-image-container">
+                    <img class="modal-img" id="modalImage">
+                    <button class="btn-proximo" onclick="proximaImagemModal()">›</button>
+                    <button class="btn-anterior" onclick="imagemAnteriorModal()">‹</button>
+                </div>
+                <div class="modal-info">
+                    <h2 id="modalTitle"></h2>
+                    <p id="modalDescription"></p>
+                    <p class="modal-price" id="modalPrice"></p>
+                    <div class="modal-actions">
+                        <button onclick="compartilharProduto()" class="btn-compartilhar">
+                            <i class="fas fa-share-alt"></i> Compartilhar
+                        </button>
+                        <button onclick="enviarMensagemWhatsAppModal()" class="btn-interesse">
+                            <i class="fab fa-whatsapp"></i> Tenho Interesse
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const supabaseUrl = 'https://zbymjdmpcudwknnvzdtk.supabase.co'
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpieW1qZG1wY3Vkd2tubnZ6ZHRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0OTk0MDUsImV4cCI6MjA2MzA3NTQwNX0.94yZvmggSaMBWfbhMbLOnUMK-tLh5cZolh0ZJp3BUto'
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey)
+
+        // Verificar estado do login
+        function verificarLogin() {
+            const user = JSON.parse(localStorage.getItem('user'))
+            const menuLogin = document.getElementById('menuLogin')
+            const menuSair = document.getElementById('menuSair')
+            const menuAdmin = document.getElementById('menuAdmin')
+
+            if (user) {
+                menuLogin.style.display = 'none'
+                menuSair.style.display = 'block'
+                if (user.nivel_acesso === 2) {
+                    menuAdmin.style.display = 'block'
+                }
+            } else {
+                menuLogin.style.display = 'block'
+                menuSair.style.display = 'none'
+                menuAdmin.style.display = 'none'
+            }
+        }
+
+        let imagensProduto = [];
+        let imagemAtualIndex = 0;
+
+        function abrirModal(id, imgSrc, nome, descricao, preco) {
+            produtoAtual = { id, nome, descricao, preco };
+            
+            // Buscar todas as imagens do produto
+            supabase
+                .from('imagens_produtos')
+                .select('imagem_url')
+                .eq('produto_id', id)
+                .then(({ data: imagens, error }) => {
+                    if (error) {
+                        console.error('Erro ao buscar imagens:', error);
+                        return;
+                    }
+                    
+                    imagensProduto = imagens.map(img => img.imagem_url);
+                    imagemAtualIndex = imagensProduto.indexOf(imgSrc);
+                    
+                    // Atualizar modal
+                    modal.style.display = 'flex';
+                    modalImg.src = imgSrc;
+                    modalTitle.textContent = nome;
+                    modalDescription.textContent = descricao;
+                    modalPrice.textContent = `R$ ${preco.toFixed(2)}`;
+                    document.body.style.overflow = 'hidden';
+                    
+                    // Mostrar/esconder botões de navegação
+                    const btnProximo = document.querySelector('.modal-image-container .btn-proximo');
+                    const btnAnterior = document.querySelector('.modal-image-container .btn-anterior');
+                    
+                    btnProximo.style.display = imagensProduto.length > 1 ? 'flex' : 'none';
+                    btnAnterior.style.display = imagensProduto.length > 1 ? 'flex' : 'none';
+                    
+                    // Atualizar URL com o ID do produto
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('produto', id);
+                    window.history.pushState({}, '', url);
+                });
+        }
+
+        function proximaImagemModal() {
+            if (imagensProduto.length <= 1) return;
+            
+            imagemAtualIndex = (imagemAtualIndex + 1) % imagensProduto.length;
+            modalImg.src = imagensProduto[imagemAtualIndex];
+        }
+
+        function imagemAnteriorModal() {
+            if (imagensProduto.length <= 1) return;
+            
+            imagemAtualIndex = (imagemAtualIndex - 1 + imagensProduto.length) % imagensProduto.length;
+            modalImg.src = imagensProduto[imagemAtualIndex];
+        }
+
+        // Modificar a função de carregar produtos
+        async function carregarProdutos() {
+            const { data: produtos, error } = await supabase
+                .from('produtos')
+                .select(`
+                    *,
+                    imagens:imagens_produtos(imagem_url)
+                `)
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('Erro ao carregar produtos:', error);
+                return;
+            }
+
+            const galeriaProdutos = document.getElementById('galeriaProdutos');
+            galeriaProdutos.innerHTML = produtos.map(produto => `
+                <div class="produto">
+                    <div class="produto-imagens">
+                        ${produto.imagens.map((imagem, index) => `
+                            <img src="${imagem.imagem_url}" alt="${produto.nome} - Imagem ${index + 1}" 
+                                 style="display: ${index === 0 ? 'block' : 'none'}"
+                                 onclick="abrirModal('${produto.id}', '${imagem.imagem_url}', '${produto.nome}', '${produto.descricao}', ${produto.preco})">
+                        `).join('')}
+                        ${produto.imagens.length > 1 ? `
+                            <button class="btn-proximo" onclick="proximaImagem(this)">›</button>
+                            <button class="btn-anterior" onclick="imagemAnterior(this)">‹</button>
+                        ` : ''}
+                    </div>
+                    <h3>${produto.nome}</h3>
+                    <p>${produto.descricao}</p>
+                    <p class="preco">R$ ${produto.preco.toFixed(2)}</p>
+                    <button onclick="enviarMensagemWhatsApp('${produto.id}', '${produto.nome}', ${produto.preco})" class="btn-interesse">
+                        <i class="fab fa-whatsapp"></i> Tenho Interesse
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Funções para navegar entre as imagens na galeria
+        function proximaImagem(btn) {
+            const container = btn.parentElement;
+            const imagens = container.querySelectorAll('img');
+            const imagemAtual = container.querySelector('img[style*="display: block"]');
+            const indexAtual = Array.from(imagens).indexOf(imagemAtual);
+            const proximoIndex = (indexAtual + 1) % imagens.length;
+            
+            imagemAtual.style.display = 'none';
+            imagens[proximoIndex].style.display = 'block';
+        }
+
+        function imagemAnterior(btn) {
+            const container = btn.parentElement;
+            const imagens = container.querySelectorAll('img');
+            const imagemAtual = container.querySelector('img[style*="display: block"]');
+            const indexAtual = Array.from(imagens).indexOf(imagemAtual);
+            const anteriorIndex = (indexAtual - 1 + imagens.length) % imagens.length;
+            
+            imagemAtual.style.display = 'none';
+            imagens[anteriorIndex].style.display = 'block';
+        }
+
+        // Funções do Modal
+        const modal = document.getElementById('imageModal')
+        const modalImg = document.getElementById('modalImage')
+        const modalTitle = document.getElementById('modalTitle')
+        const modalDescription = document.getElementById('modalDescription')
+        const modalPrice = document.getElementById('modalPrice')
+        const closeBtn = document.getElementsByClassName('close-modal')[0]
+
+        let produtoAtual = null
+
+        function compartilharProduto() {
+            if (!produtoAtual) return
+
+            const url = new URL(window.location.href)
+            url.searchParams.set('produto', produtoAtual.id)
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: produtoAtual.nome,
+                    text: `Confira este produto: ${produtoAtual.nome} - R$ ${produtoAtual.preco.toFixed(2)}`,
+                    url: url.toString()
+                })
+                .catch(console.error)
+            } else {
+                // Fallback para copiar o link
+                navigator.clipboard.writeText(url.toString())
+                    .then(() => alert('Link copiado para a área de transferência!'))
+                    .catch(err => console.error('Erro ao copiar link:', err))
+            }
+        }
+
+        // Fechar modal ao clicar no X
+        closeBtn.onclick = function() {
+            modal.style.display = 'none'
+            document.body.style.overflow = 'auto'
+            // Limpar parâmetro da URL
+            const url = new URL(window.location.href)
+            url.searchParams.delete('produto')
+            window.history.pushState({}, '', url)
+        }
+
+        // Fechar modal ao clicar fora
+        modal.onclick = function(event) {
+            if (event.target === modal) {
+                modal.style.display = 'none'
+                document.body.style.overflow = 'auto'
+                // Limpar parâmetro da URL
+                const url = new URL(window.location.href)
+                url.searchParams.delete('produto')
+                window.history.pushState({}, '', url)
+            }
+        }
+
+        // Fechar modal com tecla ESC
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && modal.style.display === 'flex') {
+                modal.style.display = 'none'
+                document.body.style.overflow = 'auto'
+                // Limpar parâmetro da URL
+                const url = new URL(window.location.href)
+                url.searchParams.delete('produto')
+                window.history.pushState({}, '', url)
+            }
+        })
+
+        // Verificar se há produto na URL ao carregar a página
+        window.addEventListener('load', function() {
+            const urlParams = new URLSearchParams(window.location.search)
+            const produtoId = urlParams.get('produto')
+            
+            if (produtoId) {
+                // Buscar informações do produto
+                supabase
+                    .from('produtos')
+                    .select('*')
+                    .eq('id', produtoId)
+                    .single()
+                    .then(({ data: produto, error }) => {
+                        if (!error && produto) {
+                            abrirModal(
+                                produto.id,
+                                produto.imagem_url,
+                                produto.nome,
+                                produto.descricao,
+                                produto.preco
+                            )
+                        }
+                    })
+            }
+        })
+
+        // Botão sair
+        document.getElementById('btnSair').addEventListener('click', async (e) => {
+            e.preventDefault()
+            await supabase.auth.signOut()
+            localStorage.removeItem('user')
+            window.location.reload()
+        })
+
+        // Função para enviar mensagem para o WhatsApp
+        function enviarMensagemWhatsApp(produtoId, produtoNome, produtoPreco) {
+            const telefone = '5582988327713' // Número do WhatsApp
+            const url = new URL(window.location.href)
+            url.searchParams.set('produto', produtoId)
+            
+            const mensagem = `Oi, tudo bem? Vi seu site e fiquei interessada no produto: ${produtoNome} - R$ ${produtoPreco.toFixed(2)}\n\nLink do produto: ${url.toString()}`
+            const msgFormatada = encodeURIComponent(mensagem)
+            const urlWhatsApp = `https://wa.me/${telefone}?text=${msgFormatada}`
+            
+            window.open(urlWhatsApp, '_blank')
+        }
+
+        // Função para enviar mensagem para o WhatsApp do modal
+        function enviarMensagemWhatsAppModal() {
+            if (!produtoAtual) return
+            
+            const telefone = '5582988327713'
+            const url = new URL(window.location.href)
+            url.searchParams.set('produto', produtoAtual.id)
+            
+            const mensagem = `Oi, tudo bem? Vi seu site e fiquei interessada no produto: ${produtoAtual.nome} - R$ ${produtoAtual.preco.toFixed(2)}\n\nLink do produto: ${url.toString()}`
+            const msgFormatada = encodeURIComponent(mensagem)
+            const urlWhatsApp = `https://wa.me/${telefone}?text=${msgFormatada}`
+            
+            window.open(urlWhatsApp, '_blank')
+        }
+
+        // Inicialização
+        verificarLogin()
+        carregarProdutos()
+    </script>
+</body>
+</html>

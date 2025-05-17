@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administração - Arte em Personalizar</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <h1>Arte em Personalizar</h1>
+            </div>
+            <ul>
+                <li><a href="index.html">Início</a></li>
+                <li><a href="index.html#sobre">Sobre</a></li>
+                <li><a href="index.html#produtos">Produtos</a></li>
+                <li><a href="index.html#contato">Contato</a></li>
+                <li><a href="#" id="btnSair" class="btn-login">Sair</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="admin-section">
+            <h2>Administração de Produtos</h2>
+            
+            <form id="produtoForm" class="admin-form">
+                <div class="form-group">
+                    <label for="nomeProduto">Nome do Produto</label>
+                    <input type="text" id="nomeProduto" required>
+                </div>
+                <div class="form-group">
+                    <label for="descricao">Descrição</label>
+                    <textarea id="descricao" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="preco">Preço</label>
+                    <input type="number" id="preco" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="imagens">Imagens do Produto (múltiplas):</label>
+                    <input type="file" id="imagens" accept="image/*" multiple required>
+                    <div id="previewImagens" class="preview-imagens"></div>
+                </div>
+                <button type="submit" class="btn-entrar">Adicionar Produto</button>
+            </form>
+
+            <div class="produtos-lista">
+                <h3>Produtos Cadastrados</h3>
+                <div id="gridProdutos" class="grid-produtos">
+                    <!-- Produtos serão listados aqui -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <style>
+    .preview-imagens {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+    }
+
+    .preview-imagem {
+        position: relative;
+        width: 150px;
+        height: 150px;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .preview-imagem img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .preview-imagem .remover-imagem {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: rgba(255, 0, 0, 0.7);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 25px;
+        height: 25px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+    }
+
+    .preview-imagem .remover-imagem:hover {
+        background: rgba(255, 0, 0, 0.9);
+    }
+    </style>
+
+    <script>
+        const supabaseUrl = 'https://zbymjdmpcudwknnvzdtk.supabase.co'
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpieW1qZG1wY3Vkd2tubnZ6ZHRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0OTk0MDUsImV4cCI6MjA2MzA3NTQwNX0.94yZvmggSaMBWfbhMbLOnUMK-tLh5cZolh0ZJp3BUto'
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey)
+
+        // Verificar se o usuário está logado e é administrador
+        async function verificarAcesso() {
+            const user = JSON.parse(localStorage.getItem('user'))
+            if (!user || user.nivel_acesso !== 2) {
+                alert('Acesso negado. Você precisa ser um administrador para acessar esta página.')
+                window.location.href = 'login.html'
+                return
+            }
+        }
+
+        // Array para armazenar as imagens selecionadas
+        let imagensSelecionadas = [];
+
+        // Função para lidar com a seleção de imagens
+        document.getElementById('imagens').addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+            const previewContainer = document.getElementById('previewImagens');
+            
+            files.forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const previewDiv = document.createElement('div');
+                        previewDiv.className = 'preview-imagem';
+                        previewDiv.innerHTML = `
+                            <img src="${e.target.result}" alt="Preview">
+                            <button type="button" class="remover-imagem">&times;</button>
+                        `;
+                        
+                        previewContainer.appendChild(previewDiv);
+                        
+                        // Adicionar evento para remover imagem
+                        previewDiv.querySelector('.remover-imagem').addEventListener('click', function() {
+                            previewDiv.remove();
+                            const index = imagensSelecionadas.indexOf(file);
+                            if (index > -1) {
+                                imagensSelecionadas.splice(index, 1);
+                            }
+                        });
+                        
+                        imagensSelecionadas.push(file);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        });
+
+        // Carregar produtos
+        async function carregarProdutos() {
+            const { data: produtos, error } = await supabase
+                .from('produtos')
+                .select(`
+                    *,
+                    imagens:imagens_produtos(imagem_url)
+                `)
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('Erro ao carregar produtos:', error);
+                return;
+            }
+
+            const gridProdutos = document.getElementById('gridProdutos');
+            gridProdutos.innerHTML = produtos.map(produto => `
+                <div class="produto-admin">
+                    <div class="produto-imagens">
+                        ${produto.imagens.map((imagem, index) => `
+                            <img src="${imagem.imagem_url}" alt="${produto.nome} - Imagem ${index + 1}" 
+                                 style="display: ${index === 0 ? 'block' : 'none'}">
+                        `).join('')}
+                        ${produto.imagens.length > 1 ? `
+                            <button class="btn-proximo" onclick="proximaImagem(this)">›</button>
+                            <button class="btn-anterior" onclick="imagemAnterior(this)">‹</button>
+                        ` : ''}
+                    </div>
+                    <h4>${produto.nome}</h4>
+                    <p>${produto.descricao}</p>
+                    <p class="preco">R$ ${produto.preco.toFixed(2)}</p>
+                    <button onclick="excluirProduto('${produto.id}')" class="btn-excluir">Excluir</button>
+                </div>
+            `).join('');
+        }
+
+        // Funções para navegar entre as imagens
+        function proximaImagem(btn) {
+            const container = btn.parentElement;
+            const imagens = container.querySelectorAll('img');
+            const imagemAtual = container.querySelector('img[style*="display: block"]');
+            const indexAtual = Array.from(imagens).indexOf(imagemAtual);
+            const proximoIndex = (indexAtual + 1) % imagens.length;
+            
+            imagemAtual.style.display = 'none';
+            imagens[proximoIndex].style.display = 'block';
+        }
+
+        function imagemAnterior(btn) {
+            const container = btn.parentElement;
+            const imagens = container.querySelectorAll('img');
+            const imagemAtual = container.querySelector('img[style*="display: block"]');
+            const indexAtual = Array.from(imagens).indexOf(imagemAtual);
+            const anteriorIndex = (indexAtual - 1 + imagens.length) % imagens.length;
+            
+            imagemAtual.style.display = 'none';
+            imagens[anteriorIndex].style.display = 'block';
+        }
+
+        // Modificar a função de adicionar produto
+        document.getElementById('produtoForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const nome = document.getElementById('nomeProduto').value;
+            const descricao = document.getElementById('descricao').value;
+            const preco = parseFloat(document.getElementById('preco').value);
+            
+            if (imagensSelecionadas.length === 0) {
+                alert('Por favor, selecione pelo menos uma imagem para o produto.');
+                return;
+            }
+            
+            try {
+                // Primeiro, criar o produto
+                const { data: produto, error: produtoError } = await supabase
+                    .from('produtos')
+                    .insert([
+                        { 
+                            nome, 
+                            descricao, 
+                            preco,
+                            imagem_url: null
+                        }
+                    ])
+                    .select()
+                    .single();
+                    
+                if (produtoError) throw produtoError;
+                
+                // Upload das imagens
+                for (const imagem of imagensSelecionadas) {
+                    const fileName = `${produto.id}/${Date.now()}_${imagem.name}`;
+                    const { data: uploadData, error: uploadError } = await supabase.storage
+                        .from('produtos')
+                        .upload(fileName, imagem);
+                        
+                    if (uploadError) throw uploadError;
+                    
+                    // Obter URL pública da imagem
+                    const { data: { publicUrl } } = supabase.storage
+                        .from('produtos')
+                        .getPublicUrl(fileName);
+                        
+                    // Salvar referência da imagem no banco
+                    const { error: imagemError } = await supabase
+                        .from('imagens_produtos')
+                        .insert([
+                            { produto_id: produto.id, imagem_url: publicUrl }
+                        ]);
+                        
+                    if (imagemError) throw imagemError;
+                }
+                
+                alert('Produto adicionado com sucesso!');
+                document.getElementById('produtoForm').reset();
+                document.getElementById('previewImagens').innerHTML = '';
+                imagensSelecionadas = [];
+                carregarProdutos();
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao adicionar produto: ' + error.message);
+            }
+        });
+
+        // Modificar a função de excluir produto para também excluir as imagens
+        async function excluirProduto(id) {
+            if (!confirm('Tem certeza que deseja excluir este produto?')) return;
+            
+            try {
+                // Primeiro, buscar todas as imagens do produto
+                const { data: imagens, error: imagensError } = await supabase
+                    .from('imagens_produtos')
+                    .select('imagem_url')
+                    .eq('produto_id', id);
+                    
+                if (imagensError) throw imagensError;
+                
+                // Excluir as imagens do storage
+                for (const imagem of imagens) {
+                    const fileName = imagem.imagem_url.split('/').pop();
+                    const { error: deleteError } = await supabase.storage
+                        .from('produtos')
+                        .remove([`${id}/${fileName}`]);
+                        
+                    if (deleteError) throw deleteError;
+                }
+                
+                // Excluir o produto (as imagens serão excluídas automaticamente devido ao CASCADE)
+                const { error: deleteError } = await supabase
+                    .from('produtos')
+                    .delete()
+                    .eq('id', id);
+                    
+                if (deleteError) throw deleteError;
+                
+                alert('Produto excluído com sucesso!');
+                carregarProdutos();
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao excluir produto: ' + error.message);
+            }
+        }
+
+        // Botão sair
+        document.getElementById('btnSair').addEventListener('click', async (e) => {
+            e.preventDefault()
+            await supabase.auth.signOut()
+            localStorage.removeItem('user')
+            window.location.href = 'index.html'
+        })
+
+        // Inicialização
+        verificarAcesso()
+        carregarProdutos()
+    </script>
+</body>
+</html> 
