@@ -860,3 +860,126 @@ footer {
         font-size: 24px;
     }
 }
+
+/* Ajustes de fonte para diferentes tamanhos de tela */
+@media (max-width: 1200px) {
+    .logo h1 {
+        font-size: 1.4rem;
+    }
+
+    nav ul li a {
+        font-size: 0.95rem;
+    }
+
+    .hero h2 {
+        font-size: 2.2rem;
+    }
+}
+
+@media (max-width: 992px) {
+    .logo h1 {
+        font-size: 1.3rem;
+    }
+
+    nav ul li a {
+        font-size: 0.9rem;
+    }
+
+    .hero h2 {
+        font-size: 2rem;
+    }
+
+    .produto h3 {
+        font-size: 1.1rem;
+    }
+
+    .produto p {
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .logo h1 {
+        font-size: 1.2rem;
+    }
+
+    nav ul li a {
+        font-size: 0.85rem;
+    }
+
+    .hero h2 {
+        font-size: 1.8rem;
+    }
+
+    .produto h3 {
+        font-size: 1rem;
+    }
+
+    .produto p {
+        font-size: 0.9rem;
+    }
+
+    .info-contato p {
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .logo h1 {
+        font-size: 1.1rem;
+    }
+
+    nav ul li a {
+        font-size: 0.8rem;
+    }
+
+    .hero h2 {
+        font-size: 1.5rem;
+    }
+
+    .produto h3 {
+        font-size: 0.95rem;
+    }
+
+    .produto p {
+        font-size: 0.85rem;
+    }
+
+    .info-contato p {
+        font-size: 0.9rem;
+    }
+
+    .btn-login, #menuAdmin a, #btnSair {
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .logo h1 {
+        font-size: 1rem;
+    }
+
+    nav ul li a {
+        font-size: 0.75rem;
+    }
+
+    .hero h2 {
+        font-size: 1.3rem;
+    }
+
+    .produto h3 {
+        font-size: 0.9rem;
+    }
+
+    .produto p {
+        font-size: 0.8rem;
+    }
+
+    .info-contato p {
+        font-size: 0.85rem;
+    }
+
+    .btn-login, #menuAdmin a, #btnSair {
+        font-size: 0.7rem;
+    }
+}
