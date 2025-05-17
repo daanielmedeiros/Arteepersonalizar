@@ -38,6 +38,13 @@
 
         <section id="produtos" class="produtos">
             <h2>Nossos Produtos</h2>
+            <div class="filtro-categorias">
+                <button class="btn-filtro ativo" data-categoria="todos">Todos</button>
+                <button class="btn-filtro" data-categoria="Personalizados">Personalizados</button>
+                <button class="btn-filtro" data-categoria="Agendas/Planners">Agendas/Planners</button>
+                <button class="btn-filtro" data-categoria="Caixas">Caixas</button>
+                <button class="btn-filtro" data-categoria="Outros">Outros</button>
+            </div>
             <div class="galeria-produtos" id="galeriaProdutos">
                 <!-- Produtos serão carregados aqui -->
             </div>
@@ -84,6 +91,245 @@
         </div>
     </div>
 
+    <style>
+        .filtro-categorias {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .produtos h2 {
+            text-align: center;
+            margin-bottom: 0rem;
+        }
+
+        /* Estilos para o card do produto */
+        .produto {
+            position: relative;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            width: 320px;
+            min-width: 260px;
+        }
+
+        .promocao-balao {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: #ff4444;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 10px rgba(255, 68, 68, 0.3);
+            z-index: 2;
+            text-transform: uppercase;
+        }
+
+        .produto:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .produto-imagens {
+            position: relative;
+            width: 100%;
+            height: 250px;
+            overflow: hidden;
+        }
+
+        .produto-imagens img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .produto:hover .produto-imagens img {
+            transform: scale(1.05);
+        }
+
+        .preco-balao {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #ff69b4;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            box-shadow: 0 2px 10px rgba(255, 105, 180, 0.3);
+            z-index: 2;
+        }
+
+        .produto-info {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: linear-gradient(to bottom, #fff, #fafafa);
+        }
+
+        .produto h3 {
+            margin: 0 0 15px 0;
+            font-size: 1.3rem;
+            color: #333;
+            text-align: center;
+            position: relative;
+            padding-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .produto h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 2px;
+            background: #ff69b4;
+        }
+
+        .produto p {
+            color: #555;
+            margin: 0 0 20px 0;
+            line-height: 1.6;
+            padding: 15px;
+            border-radius: 8px;
+            width: 100%;
+            text-align: center;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid #eee;
+            font-size: 0.95rem;
+        }
+
+        .btn-interesse {
+            width: 100%;
+            padding: 12px;
+            background: #ff69b4;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: auto;
+            box-shadow: 0 2px 10px rgba(255, 105, 180, 0.2);
+        }
+
+        .btn-interesse:hover {
+            background: #ff4da6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 105, 180, 0.3);
+        }
+
+        .btn-interesse i {
+            font-size: 1.2rem;
+        }
+
+        .btn-proximo, .btn-anterior {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.8);
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 2;
+        }
+
+        .btn-proximo {
+            right: 10px;
+        }
+
+        .btn-anterior {
+            left: 10px;
+        }
+
+        .btn-proximo:hover, .btn-anterior:hover {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .produto {
+                width: 100%;
+                max-width: 320px;
+            }
+        }
+
+        .btn-filtro {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            background-color: #f0f0f0;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .btn-filtro:hover {
+            background-color: #e0e0e0;
+        }
+
+        .btn-filtro.ativo {
+            background-color: #ff69b4;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .filtro-categorias {
+                gap: 0.5rem;
+            }
+            
+            .btn-filtro {
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Estilo para o balão de promoção no modal */
+        .modal-promocao-balao {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: #ff4444;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1rem;
+            box-shadow: 0 2px 10px rgba(255, 68, 68, 0.3);
+            z-index: 2;
+            text-transform: uppercase;
+        }
+
+        .modal-image-container {
+            position: relative;
+        }
+    </style>
+
     <script>
         const supabaseUrl = 'https://zbymjdmpcudwknnvzdtk.supabase.co'
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpieW1qZG1wY3Vkd2tubnZ6ZHRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0OTk0MDUsImV4cCI6MjA2MzA3NTQwNX0.94yZvmggSaMBWfbhMbLOnUMK-tLh5cZolh0ZJp3BUto'
@@ -112,8 +358,8 @@
         let imagensProduto = [];
         let imagemAtualIndex = 0;
 
-        function abrirModal(id, imgSrc, nome, descricao, preco) {
-            produtoAtual = { id, nome, descricao, preco };
+        function abrirModal(id, imgSrc, nome, descricao, preco, emPromocao) {
+            produtoAtual = { id, nome, descricao, preco, emPromocao };
 
             // Buscar todas as imagens do produto
             supabase
@@ -127,17 +373,27 @@
                     }
 
                     imagensProduto = imagens.map(img => img.imagem_url);
-                    // Se imgSrc não estiver no array, use a primeira imagem
                     imagemAtualIndex = imagensProduto.indexOf(imgSrc);
                     if (imagemAtualIndex === -1) imagemAtualIndex = 0;
 
-                    // Atualizar modal SOMENTE AGORA
+                    // Atualizar modal
                     modal.style.display = 'flex';
                     modalImg.src = imagensProduto[imagemAtualIndex];
                     modalTitle.textContent = nome;
                     modalDescription.textContent = descricao;
-                    modalPrice.textContent = `R$ ${preco.toFixed(2)}`;
+                    modalPrice.textContent = `R$ ${preco.toFixed(2).replace('.', ',')}`;
                     document.body.style.overflow = 'hidden';
+
+                    // Adicionar ou remover balão de promoção
+                    const promocaoBalao = document.querySelector('.modal-promocao-balao');
+                    if (promocaoBalao) promocaoBalao.remove();
+                    
+                    if (emPromocao) {
+                        const balao = document.createElement('div');
+                        balao.className = 'modal-promocao-balao';
+                        balao.textContent = 'Promoção';
+                        document.querySelector('.modal-image-container').appendChild(balao);
+                    }
 
                     // Mostrar/esconder botões de navegação
                     const btnProximo = document.querySelector('.modal-image-container .btn-proximo');
@@ -167,12 +423,48 @@
             modalImg.src = imagensProduto[imagemAtualIndex];
         }
 
-        // Modificar a função de carregar produtos
+        // Função para filtrar produtos por categoria
+        function filtrarProdutos(categoria) {
+            const produtos = document.querySelectorAll('.produto');
+            const botoes = document.querySelectorAll('.btn-filtro');
+            
+            // Atualizar estado dos botões
+            botoes.forEach(btn => {
+                btn.classList.remove('ativo');
+                if (btn.dataset.categoria === categoria) {
+                    btn.classList.add('ativo');
+                }
+            });
+            
+            // Filtrar produtos
+            produtos.forEach(produto => {
+                const produtoCategoria = produto.dataset.categoria;
+                if (categoria === 'todos' || produtoCategoria === categoria) {
+                    produto.style.display = 'block';
+                } else {
+                    produto.style.display = 'none';
+                }
+            });
+        }
+
+        // Adicionar eventos aos botões de filtro
+        document.querySelectorAll('.btn-filtro').forEach(btn => {
+            btn.addEventListener('click', () => {
+                filtrarProdutos(btn.dataset.categoria);
+            });
+        });
+
+        // Modificar a função de carregar produtos para incluir em_promocao
         async function carregarProdutos() {
             const { data: produtos, error } = await supabase
                 .from('produtos')
                 .select(`
-                    *,
+                    id,
+                    nome,
+                    descricao,
+                    preco,
+                    categoria,
+                    em_promocao,
                     imagens:imagens_produtos(imagem_url)
                 `)
                 .order('created_at', { ascending: false });
@@ -184,24 +476,27 @@
 
             const galeriaProdutos = document.getElementById('galeriaProdutos');
             galeriaProdutos.innerHTML = produtos.map(produto => `
-                <div class="produto">
+                <div class="produto" data-categoria="${produto.categoria || 'Outros'}">
+                    ${produto.em_promocao ? '<div class="promocao-balao">Promoção</div>' : ''}
+                    <div class="preco-balao">R$ ${produto.preco.toFixed(2).replace('.', ',')}</div>
                     <div class="produto-imagens">
                         ${produto.imagens.map((imagem, index) => `
                             <img src="${imagem.imagem_url}" alt="${produto.nome} - Imagem ${index + 1}" 
                                  style="display: ${index === 0 ? 'block' : 'none'}"
-                                 onclick="abrirModal('${produto.id}', '${imagem.imagem_url}', '${produto.nome}', '${produto.descricao}', ${produto.preco})">
+                                 onclick="abrirModal('${produto.id}', '${imagem.imagem_url}', '${produto.nome}', '${produto.descricao}', ${produto.preco}, ${produto.em_promocao})">
                         `).join('')}
                         ${produto.imagens.length > 1 ? `
                             <button class="btn-proximo" onclick="proximaImagem(this)">›</button>
                             <button class="btn-anterior" onclick="imagemAnterior(this)">‹</button>
                         ` : ''}
                     </div>
-                    <h3>${produto.nome}</h3>
-                    <p>${produto.descricao}</p>
-                    <p class="preco">R$ ${produto.preco.toFixed(2)}</p>
-                    <button onclick="enviarMensagemWhatsApp('${produto.id}', '${produto.nome}', ${produto.preco})" class="btn-interesse">
-                        <i class="fab fa-whatsapp"></i> Tenho Interesse
-                    </button>
+                    <div class="produto-info">
+                        <h3>${produto.nome}</h3>
+                        <p>${produto.descricao}</p>
+                        <button onclick="enviarMensagemWhatsApp('${produto.id}', '${produto.nome}', ${produto.preco})" class="btn-interesse">
+                            <i class="fab fa-whatsapp"></i> Tenho Interesse
+                        </button>
+                    </div>
                 </div>
             `).join('');
         }
@@ -248,7 +543,7 @@
             if (navigator.share) {
                 navigator.share({
                     title: produtoAtual.nome,
-                    text: `Confira este produto: ${produtoAtual.nome} - R$ ${produtoAtual.preco.toFixed(2)}`,
+                    text: `Confira este produto: ${produtoAtual.nome} - R$ ${produtoAtual.preco.toFixed(2).replace('.', ',')}`,
                     url: url.toString()
                 })
                 .catch(console.error)
@@ -313,7 +608,8 @@
                                 produto.imagem_url,
                                 produto.nome,
                                 produto.descricao,
-                                produto.preco
+                                produto.preco,
+                                produto.em_promocao
                             )
                         }
                     })
@@ -334,7 +630,7 @@
             const url = new URL(window.location.href)
             url.searchParams.set('produto', produtoId)
             
-            const mensagem = `Oi, tudo bem? Vi seu site e fiquei interessada no produto: ${produtoNome} - R$ ${produtoPreco.toFixed(2)}\n\nLink do produto: ${url.toString()}`
+            const mensagem = `Oi, tudo bem? Vi seu site e fiquei interessada no produto: ${produtoNome} - R$ ${produtoPreco.toFixed(2).replace('.', ',')}\n\nLink do produto: ${url.toString()}`
             const msgFormatada = encodeURIComponent(mensagem)
             const urlWhatsApp = `https://wa.me/${telefone}?text=${msgFormatada}`
             
@@ -349,7 +645,7 @@
             const url = new URL(window.location.href)
             url.searchParams.set('produto', produtoAtual.id)
             
-            const mensagem = `Oi, tudo bem? Vi seu site e fiquei interessada no produto: ${produtoAtual.nome} - R$ ${produtoAtual.preco.toFixed(2)}\n\nLink do produto: ${url.toString()}`
+            const mensagem = `Oi, tudo bem? Vi seu site e fiquei interessada no produto: ${produtoAtual.nome} - R$ ${produtoAtual.preco.toFixed(2).replace('.', ',')}\n\nLink do produto: ${url.toString()}`
             const msgFormatada = encodeURIComponent(mensagem)
             const urlWhatsApp = `https://wa.me/${telefone}?text=${msgFormatada}`
             
