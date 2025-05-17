@@ -20,13 +20,14 @@ body {
 }
 
 header {
-    background-color: rgba(255, 255, 255, 0.95);
-    box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+    background: rgba(255, 105, 180, 0.15); /* rosa claro e transparente */
+    box-shadow: 0 2px 15px rgba(255, 105, 180, 0.08);
     position: fixed;
     width: 100%;
     top: 0;
     z-index: 1000;
     backdrop-filter: blur(5px);
+    border-radius: 0 0 20px 20px;
 }
 
 nav {
@@ -36,6 +37,9 @@ nav {
     padding: 1rem 5%;
     max-width: 1200px;
     margin: 0 auto;
+    background: none;
+    border-radius: 0;
+    box-shadow: none;
 }
 
 .logo {
@@ -101,6 +105,8 @@ section {
     color: #fff;
     position: relative;
     overflow: hidden;
+    top: 20px;
+    border-radius: 20px;
 }
 
 .hero::before {
@@ -184,14 +190,26 @@ section {
     background: linear-gradient(45deg, #a8edea 0%, #fed6e3 100%);
     text-align: center;
     border-radius: 15px;
-    margin: 2rem auto;
+    margin: 1rem auto;
     padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 180px;
+}
+
+.contato h2 {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 1.5rem;
 }
 
 .info-contato {
-    margin-top: 2rem;
+    margin-top: 0;
     display: flex;
     justify-content: center;
+    align-items: center;
     gap: 2rem;
     flex-wrap: wrap;
 }
