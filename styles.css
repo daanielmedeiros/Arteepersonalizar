@@ -202,6 +202,7 @@ section {
     align-items: center;
     gap: 0.5rem;
     font-size: 1.1rem;
+    white-space: nowrap;
 }
 
 .info-contato p i {
@@ -274,12 +275,45 @@ footer {
     }
 
     .info-contato {
-        flex-direction: column;
+        flex-direction: row;
         gap: 1rem;
+        padding: 0 1rem;
     }
     
     .info-contato p {
+        font-size: 0.85rem;
+    }
+
+    .info-contato p i {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .info-contato {
+        gap: 0.8rem;
+    }
+    
+    .info-contato p {
+        font-size: 0.75rem;
+    }
+
+    .info-contato p i {
         font-size: 1rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .info-contato {
+        gap: 0.5rem;
+    }
+    
+    .info-contato p {
+        font-size: 0.7rem;
+    }
+
+    .info-contato p i {
+        font-size: 0.9rem;
     }
 }
 
