@@ -114,7 +114,7 @@
 
         function abrirModal(id, imgSrc, nome, descricao, preco) {
             produtoAtual = { id, nome, descricao, preco };
-            
+
             // Buscar todas as imagens do produto
             supabase
                 .from('imagens_produtos')
@@ -125,25 +125,27 @@
                         console.error('Erro ao buscar imagens:', error);
                         return;
                     }
-                    
+
                     imagensProduto = imagens.map(img => img.imagem_url);
+                    // Se imgSrc não estiver no array, use a primeira imagem
                     imagemAtualIndex = imagensProduto.indexOf(imgSrc);
-                    
-                    // Atualizar modal
+                    if (imagemAtualIndex === -1) imagemAtualIndex = 0;
+
+                    // Atualizar modal SOMENTE AGORA
                     modal.style.display = 'flex';
-                    modalImg.src = imgSrc;
+                    modalImg.src = imagensProduto[imagemAtualIndex];
                     modalTitle.textContent = nome;
                     modalDescription.textContent = descricao;
                     modalPrice.textContent = `R$ ${preco.toFixed(2)}`;
                     document.body.style.overflow = 'hidden';
-                    
+
                     // Mostrar/esconder botões de navegação
                     const btnProximo = document.querySelector('.modal-image-container .btn-proximo');
                     const btnAnterior = document.querySelector('.modal-image-container .btn-anterior');
-                    
+
                     btnProximo.style.display = imagensProduto.length > 1 ? 'flex' : 'none';
                     btnAnterior.style.display = imagensProduto.length > 1 ? 'flex' : 'none';
-                    
+
                     // Atualizar URL com o ID do produto
                     const url = new URL(window.location.href);
                     url.searchParams.set('produto', id);
