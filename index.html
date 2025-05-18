@@ -330,6 +330,21 @@
         .modal-image-container {
             position: relative;
         }
+
+        .modal-info p {
+            color: #555;
+            margin: 0 0 20px 0;
+            line-height: 1.6;
+            padding: 15px;
+            border-radius: 8px;
+            width: 100%;
+            text-align: left;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid #eee;
+            font-size: 0.95rem;
+            white-space: pre-line;
+        }
     </style>
 
     <script>
@@ -477,30 +492,40 @@
             }
 
             const galeriaProdutos = document.getElementById('galeriaProdutos');
-            galeriaProdutos.innerHTML = produtos.map(produto => `
-                <div class="produto" data-categoria="${produto.categoria || 'Outros'}">
+            galeriaProdutos.innerHTML = produtos.map(produto => {
+                // Escapar caracteres especiais na descrição
+                const descricaoEscapada = produto.descricao
+                    .replace(/\\/g, '\\\\')
+                    .replace(/'/g, "\\'")
+                    .replace(/\n/g, '\\n')
+                    .replace(/\r/g, '\\r')
+                    .replace(/\t/g, '\\t')
+                    .replace(/\*/g, '\\*');
+
+                return `
+                <div class="produto" data-categoria="${produto.categoria || 'Outros'}" 
+                     onclick="abrirModal('${produto.id}', '${produto.imagens[0]?.imagem_url || ''}', '${produto.nome.replace(/'/g, "\\'")}', '${descricaoEscapada}', ${produto.preco}, ${produto.em_promocao})">
                     ${produto.em_promocao ? '<div class="promocao-balao">Promoção</div>' : ''}
                     <div class="preco-balao">R$ ${produto.preco.toFixed(2).replace('.', ',')}</div>
                     <div class="produto-imagens">
                         ${produto.imagens.map((imagem, index) => `
                             <img src="${imagem.imagem_url}" alt="${produto.nome} - Imagem ${index + 1}" 
-                                 style="display: ${index === 0 ? 'block' : 'none'}"
-                                 onclick="abrirModal('${produto.id}', '${imagem.imagem_url}', '${produto.nome}', '${produto.descricao.replace(/'/g, "\\'")}', ${produto.preco}, ${produto.em_promocao})">
+                                 style="display: ${index === 0 ? 'block' : 'none'}">
                         `).join('')}
                         ${produto.imagens.length > 1 ? `
-                            <button class="btn-proximo" onclick="proximaImagem(this)">›</button>
-                            <button class="btn-anterior" onclick="imagemAnterior(this)">‹</button>
+                            <button class="btn-proximo" onclick="event.stopPropagation(); proximaImagem(this)">›</button>
+                            <button class="btn-anterior" onclick="event.stopPropagation(); imagemAnterior(this)">‹</button>
                         ` : ''}
                     </div>
                     <div class="produto-info">
                         <h3>${produto.nome}</h3>
                         <p>${produto.descricao}</p>
-                        <button onclick="enviarMensagemWhatsApp('${produto.id}', '${produto.nome}', ${produto.preco})" class="btn-interesse">
+                        <button onclick="event.stopPropagation(); enviarMensagemWhatsApp('${produto.id}', '${produto.nome.replace(/'/g, "\\'")}', ${produto.preco})" class="btn-interesse">
                             <i class="fab fa-whatsapp"></i> Tenho Interesse
                         </button>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         // Funções para navegar entre as imagens na galeria
@@ -663,6 +688,24 @@
         // Inicialização
         verificarLogin()
         carregarProdutos()
+
+        // Adicionar estilos para melhorar a interatividade
+        const style = document.createElement('style');
+        style.textContent = `
+            .produto {
+                cursor: pointer;
+            }
+            
+            .produto button {
+                cursor: pointer;
+            }
+            
+            .produto:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>
