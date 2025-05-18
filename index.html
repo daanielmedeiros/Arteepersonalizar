@@ -30,10 +30,19 @@
             <h2>Seja Bem-vindo(a)</h2>
         </section>
 
-        <section id="sobre" class="sobre">
+        <!-- <section id="sobre" class="sobre">
             <h2>Sobre Nós</h2>
             <p>Olá! Sou Fátima Medeiros, artesã e proprietária da Arte em Personalizar. 
                Criamos produtos únicos e personalizados para tornar seus momentos especiais ainda mais memoráveis.</p>
+        </section> -->
+
+        <section id="lancamentos" class="lancamentos">
+            <h2>Lançamentos</h2>
+            <div class="lancamento-container" onclick="abrirModalLancamentoAtual()">
+                <div class="lancamento-quadrado" id="lancamentoQuadrado">
+                    <!-- Os produtos em lançamento serão carregados aqui -->
+                </div>
+            </div>
         </section>
 
         <section id="produtos" class="produtos">
@@ -105,7 +114,7 @@
         .produtos h2 {
             text-align: center;
             margin-bottom: 0rem;
-            margin-top: -4rem;
+            margin-top: -9rem;
         }
 
         /* Estilos para o card do produto */
@@ -362,6 +371,125 @@
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
+        }
+
+        .lancamentos {
+            padding: 3rem 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .lancamento-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .lancamento-quadrado {
+            width: 100%;
+            height: 600px;
+            background-color: #f0f0f0;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .lancamento-item {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+        }
+
+        .lancamento-container:hover .lancamento-quadrado {
+            transform: scale(1.02);
+            transition: transform 0.3s ease;
+        }
+
+        .lancamento-item:hover {
+            transform: scale(1.02);
+        }
+
+        .lancamento-item[style*="display: block"] {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .lancamento-item.saindo {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+
+        .lancamento-imagem {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .lancamento-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            color: white;
+            padding: 2rem;
+            text-align: left;
+        }
+
+        .lancamento-info h3 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .lancamento-info p {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            opacity: 0.9;
+        }
+
+        .lancamento-preco {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ff69b4;
+        }
+
+        .btn-ver-mais {
+            position: relative;
+            z-index: 2;
+            background: #ff69b4;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .btn-ver-mais:hover {
+            background: #ff4da6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 105, 180, 0.3);
+        }
+
+        .sem-lancamentos {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            font-size: 1.5rem;
+            color: #666;
         }
     </style>
 
@@ -703,9 +831,177 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
 
+        // Função para abrir o modal do lançamento atual
+        function abrirModalLancamentoAtual() {
+            const itemAtual = document.querySelector('.lancamento-item[style*="display: block"]');
+            if (!itemAtual) return;
+
+            const produtoId = itemAtual.dataset.produtoId;
+            const imagemUrl = itemAtual.querySelector('.lancamento-imagem').src;
+            const nome = itemAtual.querySelector('h3').textContent;
+            const descricao = itemAtual.querySelector('.lancamento-info p').textContent;
+            const preco = parseFloat(itemAtual.querySelector('.lancamento-preco').textContent.replace('R$ ', '').replace(',', '.'));
+
+            abrirModalLancamento(produtoId, imagemUrl, nome, descricao, preco);
+        }
+
+        // Função específica para abrir modal dos lançamentos
+        function abrirModalLancamento(id, imgSrc, nome, descricao, preco) {
+            // Buscar informações completas do produto
+            supabase
+                .from('produtos')
+                .select('*')
+                .eq('id', id)
+                .single()
+                .then(({ data: produto, error }) => {
+                    if (error) {
+                        console.error('Erro ao buscar produto:', error);
+                        return;
+                    }
+
+                    produtoAtual = { 
+                        id, 
+                        nome, 
+                        descricao, 
+                        preco, 
+                        emPromocao: produto.em_promocao 
+                    };
+
+                    // Buscar todas as imagens do produto
+                    supabase
+                        .from('imagens_produtos')
+                        .select('imagem_url')
+                        .eq('produto_id', id)
+                        .then(({ data: imagens, error }) => {
+                            if (error) {
+                                console.error('Erro ao buscar imagens:', error);
+                                return;
+                            }
+
+                            imagensProduto = imagens.map(img => img.imagem_url);
+                            imagemAtualIndex = imagensProduto.indexOf(imgSrc);
+                            if (imagemAtualIndex === -1) imagemAtualIndex = 0;
+
+                            // Atualizar modal
+                            modal.style.display = 'flex';
+                            modalImg.src = imagensProduto[imagemAtualIndex];
+                            modalTitle.textContent = nome;
+                            modalDescription.textContent = descricao;
+                            modalPrice.textContent = `R$ ${preco.toFixed(2).replace('.', ',')}`;
+                            document.body.style.overflow = 'hidden';
+
+                            // Adicionar ou remover balão de promoção
+                            const promocaoBalao = document.querySelector('.modal-promocao-balao');
+                            if (promocaoBalao) promocaoBalao.remove();
+                            
+                            if (produto.em_promocao) {
+                                const balao = document.createElement('div');
+                                balao.className = 'modal-promocao-balao';
+                                balao.textContent = 'Promoção';
+                                document.querySelector('.modal-image-container').appendChild(balao);
+                            }
+
+                            // Mostrar/esconder botões de navegação
+                            const btnProximo = document.querySelector('.modal-image-container .btn-proximo');
+                            const btnAnterior = document.querySelector('.modal-image-container .btn-anterior');
+
+                            btnProximo.style.display = imagensProduto.length > 1 ? 'flex' : 'none';
+                            btnAnterior.style.display = imagensProduto.length > 1 ? 'flex' : 'none';
+
+                            // Atualizar URL com o ID do produto
+                            const url = new URL(window.location.href);
+                            url.searchParams.set('produto', id);
+                            window.history.pushState({}, '', url);
+                        });
+                });
+        }
+
+        // Função para carregar os produtos em lançamento
+        async function carregarLancamentos() {
+            const { data: produtos, error } = await supabase
+                .from('produtos')
+                .select(`
+                    id,
+                    nome,
+                    descricao,
+                    preco,
+                    imagens:imagens_produtos(imagem_url)
+                `)
+                .eq('em_lancamento', true)
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('Erro ao carregar lançamentos:', error);
+                return;
+            }
+
+            const lancamentoQuadrado = document.getElementById('lancamentoQuadrado');
+            
+            if (produtos && produtos.length > 0) {
+                let html = '';
+                produtos.forEach((produto, produtoIndex) => {
+                    if (produto.imagens && produto.imagens.length > 0) {
+                        produto.imagens.forEach((imagem, imagemIndex) => {
+                            const nomeEscapado = produto.nome.replace(/'/g, "\\'").replace(/"/g, '\\"');
+                            const descricaoEscapada = produto.descricao.replace(/'/g, "\\'").replace(/"/g, '\\"');
+                            
+                            html += `
+                                <div class="lancamento-item" 
+                                     data-produto-id="${produto.id}"
+                                     data-produto-index="${produtoIndex}"
+                                     data-imagem-index="${imagemIndex}"
+                                     style="display: ${produtoIndex === 0 && imagemIndex === 0 ? 'block' : 'none'}">
+                                    <img src="${imagem.imagem_url}" alt="${produto.nome}" class="lancamento-imagem">
+                                    <div class="lancamento-info">
+                                        <h3>${produto.nome}</h3>
+                                        <p>${produto.descricao}</p>
+                                        <p class="lancamento-preco">R$ ${produto.preco.toFixed(2).replace('.', ',')}</p>
+                                        <button class="btn-ver-mais" onclick="event.stopPropagation(); abrirModalLancamentoAtual()">
+                                            Ver Mais
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
+                });
+                lancamentoQuadrado.innerHTML = html;
+
+                // Iniciar o carrossel automático
+                iniciarCarrosselLancamentos();
+            } else {
+                lancamentoQuadrado.innerHTML = '<p class="sem-lancamentos">Nenhum lançamento no momento</p>';
+            }
+        }
+
+        // Função para iniciar o carrossel automático
+        function iniciarCarrosselLancamentos() {
+            const items = document.querySelectorAll('.lancamento-item');
+            let currentIndex = 0;
+
+            // Função para mostrar o próximo item
+            function mostrarProximoItem() {
+                const currentItem = items[currentIndex];
+                currentItem.classList.add('saindo');
+                
+                setTimeout(() => {
+                    currentItem.style.display = 'none';
+                    currentItem.classList.remove('saindo');
+                    
+                    currentIndex = (currentIndex + 1) % items.length;
+                    const nextItem = items[currentIndex];
+                    nextItem.style.display = 'block';
+                }, 500); // Tempo da transição
+            }
+
+            // Iniciar o intervalo de 5 segundos
+            setInterval(mostrarProximoItem, 5000);
+        }
+
         // Inicialização
         verificarLogin()
         carregarProdutos()
+        carregarLancamentos()
 
         // Adicionar estilos para melhorar a interatividade
         const style = document.createElement('style');

@@ -266,22 +266,27 @@
         margin-top: 10px;
     }
 
+    .produto-actions-left {
+        display: flex;
+        gap: 15px;
+    }
+
     .promocao-label {
         display: flex;
         align-items: center;
         gap: 10px;
         cursor: pointer;
-        color: #555;
+        color: #fffefe;
         font-size: 1rem;
-        background: white;
-        padding: 10px 20px;
-        border-radius: 25px;
+        background: rgb(131, 59, 121);
+        padding: 5px 20px;
+        border-radius: 8px;
         transition: all 0.3s ease;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     }
 
     .promocao-label:hover {
-        background: #f0f0f0;
+        background: rgb(177, 79, 164);
         transform: translateY(-1px);
     }
 
@@ -305,6 +310,10 @@
         gap: 8px;
         box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);
         min-width: 120px;
+        margin-top: -42.5rem;
+        margin-left: -21rem;
+        margin-bottom: 42.5rem;
+        z-index: 1;
     }
 
     .btn-salvar:hover {
@@ -315,13 +324,13 @@
 
     .btn-excluir {
         position: absolute;
-        top: 15px;
-        right: 15px;
+        top: 5px;
+        right: -18px;
         background: #ff4444;
         color: white;
         border: none;
-        padding: 8px 15px;
-        border-radius: 8px;
+        padding: 8px 8px;
+        border-radius: 5px;
         cursor: pointer;
         transition: all 0.3s ease;
         font-weight: 500;
@@ -344,6 +353,7 @@
         height: 20px;
         cursor: pointer;
         accent-color: #ff69b4;
+        margin-left: -1rem;
     }
     </style>
 
@@ -416,6 +426,7 @@
                     preco,
                     categoria,
                     em_promocao,
+                    em_lancamento,
                     imagens:imagens_produtos(imagem_url)
                 `)
                 .order('created_at', { ascending: false });
@@ -456,13 +467,22 @@
                         </select>
                     </div>
                     <div class="produto-actions">
-                        <label class="promocao-label">
-                            <input type="checkbox" 
-                                   class="promocao-checkbox" 
-                                   ${produto.em_promocao ? 'checked' : ''} 
-                                   onchange="atualizarPromocao('${produto.id}', this.checked)">
-                            Em Promoção
-                        </label>
+                        <div class="produto-actions-left">
+                            <label class="promocao-label">
+                                <input type="checkbox" 
+                                       class="promocao-checkbox" 
+                                       ${produto.em_promocao ? 'checked' : ''} 
+                                       onchange="atualizarPromocao('${produto.id}', this.checked)">
+                                Promoção
+                            </label>
+                            <label class="promocao-label">
+                                <input type="checkbox" 
+                                       class="promocao-checkbox" 
+                                       ${produto.em_lancamento ? 'checked' : ''} 
+                                       onchange="atualizarLancamento('${produto.id}', this.checked)">
+                                Lançamento
+                            </label>
+                        </div>
                         <div class="produto-actions-right">
                             <button onclick="atualizarProduto('${produto.id}')" class="btn-salvar">
                                 <i class="fas fa-save"></i> Salvar
@@ -680,6 +700,30 @@
             }
         }
 
+        // Função para atualizar o status de lançamento
+        async function atualizarLancamento(produtoId, emLancamento) {
+            try {
+                const { data: produtoAtualizado, error: erroAtualizacao } = await supabase
+                    .from('produtos')
+                    .update({ em_lancamento: emLancamento })
+                    .eq('id', produtoId)
+                    .select();
+
+                if (erroAtualizacao) {
+                    console.error('Erro na atualização:', erroAtualizacao);
+                    alert('Erro ao atualizar lançamento');
+                    return;
+                }
+
+                alert(emLancamento ? 'Produto marcado como lançamento!' : 'Produto removido dos lançamentos');
+                await carregarProdutos();
+
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro ao atualizar lançamento: ' + error.message);
+            }
+        }
+
         // Função para atualizar produto
         async function atualizarProduto(produtoId) {
             try {
@@ -689,6 +733,7 @@
                 const preco = parseFloat(produtoElement.querySelector('.produto-preco').value);
                 const categoria = produtoElement.querySelector('.produto-categoria').value;
                 const emPromocao = produtoElement.querySelector('.promocao-checkbox').checked;
+                const emLancamento = produtoElement.querySelector('.promocao-checkbox').checked;
 
                 const { error } = await supabase
                     .from('produtos')
@@ -697,7 +742,8 @@
                         descricao,
                         preco,
                         categoria,
-                        em_promocao: emPromocao
+                        em_promocao: emPromocao,
+                        em_lancamento: emLancamento
                     })
                     .eq('id', produtoId);
 
