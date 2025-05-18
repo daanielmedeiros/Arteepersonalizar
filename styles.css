@@ -205,7 +205,8 @@ section {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 180px;
+    text-align: center;
+    min-height: 50px;
 }
 
 .contato h2 {

@@ -54,9 +54,9 @@
         <section id="contato" class="contato">
             <h2>Entre em Contato</h2>
             <div class="info-contato">
-                <p><i class="fab fa-whatsapp"></i> (82) 9 8832-7713</p>
-                <p><i class="fas fa-envelope"></i> fal_medeiros@hotmail.com</p>
-                <p><i class="fab fa-instagram"></i> @arteempersonalizar_</p>
+                <p><img src="img/whatsapp.png" alt="WhatsApp" class="contato-icon"> (82) 9 8832-7713</p>
+                <p><img src="img/email.png" alt="Email" class="contato-icon"> fal_medeiros@hotmail.com</p>
+                <p><img src="img/instagram.png" alt="Instagram" class="contato-icon"> @arteempersonalizar_</p>
             </div>
         </section>
     </main>
@@ -344,6 +344,22 @@
             border: 1px solid #eee;
             font-size: 0.95rem;
             white-space: pre-line;
+        }
+
+        .contato-icon {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+            margin-right: 10px;
+        }
+
+        .info-contato p {
+            margin: 0;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
         }
     </style>
 
