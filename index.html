@@ -43,6 +43,7 @@
                 <button class="btn-filtro" data-categoria="Personalizados">Personalizados</button>
                 <button class="btn-filtro" data-categoria="Agendas/Planners">Agendas/Planners</button>
                 <button class="btn-filtro" data-categoria="Caixas">Caixas</button>
+                <button class="btn-filtro" data-categoria="Livros">Livros</button>
                 <button class="btn-filtro" data-categoria="Outros">Outros</button>
             </div>
             <div class="galeria-produtos" id="galeriaProdutos">
@@ -205,11 +206,12 @@
             padding: 15px;
             border-radius: 8px;
             width: 100%;
-            text-align: center;
+            text-align: left;
             background: white;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
             border: 1px solid #eee;
             font-size: 0.95rem;
+            white-space: pre-line;
         }
 
         .btn-interesse {
@@ -454,7 +456,7 @@
             });
         });
 
-        // Modificar a função de carregar produtos para incluir em_promocao
+        // Modificar a função de carregar produtos para preservar a formatação
         async function carregarProdutos() {
             const { data: produtos, error } = await supabase
                 .from('produtos')
@@ -483,7 +485,7 @@
                         ${produto.imagens.map((imagem, index) => `
                             <img src="${imagem.imagem_url}" alt="${produto.nome} - Imagem ${index + 1}" 
                                  style="display: ${index === 0 ? 'block' : 'none'}"
-                                 onclick="abrirModal('${produto.id}', '${imagem.imagem_url}', '${produto.nome}', '${produto.descricao}', ${produto.preco}, ${produto.em_promocao})">
+                                 onclick="abrirModal('${produto.id}', '${imagem.imagem_url}', '${produto.nome}', '${produto.descricao.replace(/'/g, "\\'")}', ${produto.preco}, ${produto.em_promocao})">
                         `).join('')}
                         ${produto.imagens.length > 1 ? `
                             <button class="btn-proximo" onclick="proximaImagem(this)">›</button>
